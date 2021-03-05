@@ -6,30 +6,43 @@ import datetime
 
 
 def _getGroupScheludeURL(group):
-    if group[:3] == '353':  #ИКНТ бакалавры
+    if group[:3] == '353' or group[:3] == '354' or group[:3] == '356' or group[:4] == 'в353' or group[:4] == 'в354' or group[:4] == 'з353' or group[:4] == 'з354':  #ИКНТ
         url = 'https://ruz.spbstu.ru/faculty/95/groups'
-        response = requests.get(url)
-    elif group[:3] == '354':  #ИКНТ магистры
-        url = 'https://ruz.spbstu.ru/faculty/95/groups'
-        response = requests.get(url)
-        #как нажать на кнопку "магистр??"     
-
-    elif group[:3] == '483':
+    elif group[:3] == '483' or group[:3] == '484' or group[:3] == '485':  #инфобез
         url = 'https://ruz.spbstu.ru/faculty/122/groups'
-        response = requests.get(url)
+    elif group[:3] == '383':  #ГИ бакалавры
+        url = 'https://ruz.spbstu.ru/faculty/101/groups'
     
     
-    if response.status_code == 200:
+    response = requests.get(url)
 
-        soup = BeautifulSoup(response.content, 'html.parser')
-        links = soup.find_all('a')
-        for link in links:
-            if group in link:
-                finalurl = 'https://ruz.spbstu.ru/' + link.get('href')
-            
+
+    if response.status_code == 200:
+        
+        soup = BeautifulSoup(response.text, 'html.parser')
+        scripts = soup.find_all('script')
+        for script in scripts:
+            if 'window.__INITIAL_STATE__' in str(script):
+                groupsJson = str(script)[41:]
+        #print(groupsJson)
+        groupsJson = groupsJson.split('},')
+        for element in groupsJson:
+            if group in element:
+                for char in element:
+                    if char == 'i' and element[element.index(char) + 1] == 'd':
+                        charid = element.index(char) + 4
+                        groupid = ''
+                        while element[charid] != ',':
+                            groupid += element[charid]
+                            charid += 1
+
+        
+        finalurl = url + '/' + groupid
+
         return finalurl
+
     else:
-        return 'САЙТ ЛЕЖИТ'
+        return f'Error, response code: {response.status_code}'
 
 
 
@@ -64,5 +77,5 @@ def nextWeekSchelude(group, lang):
 
 #3540202/00201
 #3532703/90001
-print(_getGroupScheludeURL('4831001/00001'))
+print(_getGroupScheludeURL('4831001/00002'))
 #todaySchecude('3532703/90001', 'RU')
