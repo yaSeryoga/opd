@@ -1,8 +1,31 @@
 import requests
 from bs4 import BeautifulSoup
-#from selenium import webdriver
 
+import pytz
 import datetime
+
+
+def _findJSON(html):
+    scripts = html.find_all('script')
+    for script in scripts:
+        if 'window.__INITIAL_STATE__' in str(script):
+            json = str(script)[41:]
+
+    return json
+
+
+def _getGroupNameFromElement(element):
+    i = 0
+    groupName = ''
+    while i < len(element):
+        if element[i:i+4] == 'name':
+            i += 7
+            while element[i] != '"':
+                groupName += element[i]
+                i += 1
+        else:
+            i += 1
+    return groupName
 
 
 def _getGroupScheludeURL(group):
@@ -20,14 +43,12 @@ def _getGroupScheludeURL(group):
     if response.status_code == 200:
         
         soup = BeautifulSoup(response.text, 'html.parser')
-        scripts = soup.find_all('script')
-        for script in scripts:
-            if 'window.__INITIAL_STATE__' in str(script):
-                groupsJson = str(script)[41:]
-        #print(groupsJson)
+        groupsJson = _findJSON(soup)
+        
         groupsJson = groupsJson.split('},')
         for element in groupsJson:
-            if group in element:
+            #print(element)
+            if group == _getGroupNameFromElement(element):
                 for char in element:
                     if char == 'i' and element[element.index(char) + 1] == 'd':
                         charid = element.index(char) + 4
@@ -47,18 +68,22 @@ def _getGroupScheludeURL(group):
 
 
 
-def todaySchecude(group, lang):
-    now = datetime.datetime.now()
-    print(now.month, now.hour, now.minute)
-    print('today')
+def todaySchecude(group, lang='RU'):
     url = _getGroupScheludeURL(group)
     response = requests.get(url)
-    #print(response.text)
-    soup = BeautifulSoup(response.content, 'html.parser')
-    days = soup.find_all('li', {'class': 'schedule__day'})
-    # for day in days:
-    #     for line in lines:
-    #         if  
+    
+
+    offset = datetime.timezone(datetime.timedelta(hours=3))
+    todayDate = str(datetime.datetime.now(offset))[:10]
+    print(f'%{todayDate}%')
+
+    soup = BeautifulSoup(response.text, 'html.parser')
+    scheludeJSON = _findJSON(soup)
+    print(scheludeJSON)
+    weekDay = datetime.datetime.today().weekday()
+    print('Антон' in scheludeJSON) 
+
+
     
     
 
@@ -77,5 +102,5 @@ def nextWeekSchelude(group, lang):
 
 #3540202/00201
 #3532703/90001
-print(_getGroupScheludeURL('4831001/00002'))
+print(_getGroupScheludeURL('з3532703/90001'))
 #todaySchecude('3532703/90001', 'RU')
