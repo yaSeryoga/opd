@@ -99,7 +99,7 @@ def __parseScheludeJSON(json):
         elif dayNumber == 7:
             dayName = 'Воскресенье'
 
-        
+
         date = __getElementFromJson('date', json)
         if f'"weekday":{dayNumber}' not in json:
             moreLessons = False
@@ -208,7 +208,6 @@ def todaySchecude(group):
 
     offset = datetime.timezone(datetime.timedelta(hours=3))
     todayDate = str(datetime.datetime.now(offset))[:10]
-    print(todayDate, datetime.time)
 
     soup = BeautifulSoup(response.text, 'html.parser')
     scheludeJSON = __findJSON(soup)
@@ -216,7 +215,6 @@ def todaySchecude(group):
     weekday = datetime.datetime.now(offset).today().weekday()
 
     weekSchelude = __parseScheludeJSON(scheludeJSON)
-    print(weekday, weekSchelude[weekday])
     return weekSchelude[weekday]
 
 
@@ -240,7 +238,6 @@ def thisWeekSchelude(group):
     scheludeJSON = __findJSON(soup)
   
     scheludeList = __parseScheludeJSON(scheludeJSON)
-    #print(scheludeList)
     return scheludeList
 
 
