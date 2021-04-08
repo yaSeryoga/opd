@@ -1,4 +1,4 @@
-#ver 1.0.0
+#ver 1.0.1
 import requests
 from bs4 import BeautifulSoup
 
@@ -99,11 +99,11 @@ def __parseScheludeJSON(json):
         elif dayNumber == 7:
             dayName = 'Воскресенье'
 
-
+        
         date = __getElementFromJson('date', json)
         if f'"weekday":{dayNumber}' not in json:
             moreLessons = False
-            result.append({'day_number': dayNumber, 'day_name': dayName, 'lessons': 'Выходной'})
+            result.append({'day_number': dayNumber, 'date': date, 'day_name': dayName, 'lessons': 'Выходной'})
         else:
             moreLessons = True
             while moreLessons:
@@ -113,10 +113,19 @@ def __parseScheludeJSON(json):
                 lesson.update({'subject_name': __getElementFromJson('subject', json)})
                 lesson.update({'time': f'{__getElementFromJson("time_start", json)} - {__getElementFromJson("time_end", json)}'})
                 lesson.update({'subject_type': __getElementFromJson('name', json)})
-                if lesson['subject_name'] != 'Военная подготовка':
+                if lesson['subject_name'] != 'Военная подготовка' and lesson['subject_name'] != 'Элективная физическая культура и спорт':
+                    
                     lesson.update({'teacher': f'{__getElementFromJson("first_name", json)} {__getElementFromJson("middle_name", json)} {__getElementFromJson("last_name", json)}'})
-                lesson.update({'auditory': f'{__getElementFromJson("name", json)}, {__getElementFromJson("name", json)}'})
-                lesson.update({'lms_url': __getElementFromJson('lms_url', json)})
+                    lesson.update({'auditory': f'{__getElementFromJson("name", json)}, {__getElementFromJson("name", json)}'})
+                    lesson.update({'lms_url': __getElementFromJson('lms_url', json)})
+                if lesson['subject_name'] == 'Элективная физическая культура и спорт':
+
+                    # __getElementFromJson("first_name", json)
+                    # __getElementFromJson("middle_name", json)
+                    # __getElementFromJson("last_name", json)
+                    #__getElementFromJson("name", json)
+                    __getElementFromJson('lms_url', json)
+                
                     
                 dayLessons.append(lesson)
                 
@@ -199,17 +208,15 @@ def todaySchecude(group):
 
     offset = datetime.timezone(datetime.timedelta(hours=3))
     todayDate = str(datetime.datetime.now(offset))[:10]
-    print(f'%{todayDate}%')
+    print(todayDate, datetime.time)
 
     soup = BeautifulSoup(response.text, 'html.parser')
     scheludeJSON = __findJSON(soup)
-    #print(scheludeJSON)
-    weekday = datetime.datetime.today().weekday()
-    #print('Антон' in scheludeJSON) 
 
-    print(type(weekday))
-    print('\n\n')
+    weekday = datetime.datetime.now(offset).today().weekday()
+
     weekSchelude = __parseScheludeJSON(scheludeJSON)
+    print(weekday, weekSchelude[weekday])
     return weekSchelude[weekday]
 
 
@@ -233,7 +240,7 @@ def thisWeekSchelude(group):
     scheludeJSON = __findJSON(soup)
   
     scheludeList = __parseScheludeJSON(scheludeJSON)
-
+    #print(scheludeList)
     return scheludeList
 
 
