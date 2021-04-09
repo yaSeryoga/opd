@@ -178,7 +178,8 @@ def _getGroupScheludeURL(group):
         
         soup = BeautifulSoup(response.text, 'html.parser')
         groupsJson = __findJSON(soup)
-        
+        groupid = ''
+
         groupsJson = groupsJson.split('},')
         for element in groupsJson:
             if group == __getGroupNameFromElement(element):
@@ -190,8 +191,10 @@ def _getGroupScheludeURL(group):
                             groupid += element[charid]
                             charid += 1
 
-        
-        finalurl = url + '/' + groupid
+        if groupid != '':
+            finalurl = url + '/' + groupid
+        else:
+            return 'Ошибка: группа не найдена'
 
         return finalurl
 
@@ -202,20 +205,13 @@ def _getGroupScheludeURL(group):
 
 
 def todaySchecude(group):
-    url = _getGroupScheludeURL(group)
-    response = requests.get(url)
-    
-
     offset = datetime.timezone(datetime.timedelta(hours=3))
-    todayDate = str(datetime.datetime.now(offset))[:10]
-
-    soup = BeautifulSoup(response.text, 'html.parser')
-    scheludeJSON = __findJSON(soup)
-
     weekday = datetime.datetime.now(offset).today().weekday()
-
-    weekSchelude = __parseScheludeJSON(scheludeJSON)
-    return weekSchelude[weekday]
+    weekSchelude = thisWeekSchelude(group)
+    if weekSchelude[:6] != 'Ошибка':
+        return weekSchelude[weekday]
+    else:
+        return weekSchelude
 
 
 def tomorrowSchelude(group):
@@ -223,56 +219,68 @@ def tomorrowSchelude(group):
     
     if weekday != 6:
         weekSchelude = thisWeekSchelude(group)
-        return weekSchelude[weekday+1]
+        if weekSchelude[:6] != 'Ошибка':
+            return weekSchelude[weekday+1]
+        else:
+            return weekSchelude
     else:
         weekSchelude = nextWeekSchelude(group)
-        return weekSchelude[0]
+        if weekSchelude[:6] != 'Ошибка':
+            return weekSchelude[0]
+        else:
+            return weekSchelude
     
 
 
 def thisWeekSchelude(group):
     url = _getGroupScheludeURL(group)
-    response = requests.get(url)
+    if url[:6] != 'Ошибка':
+        response = requests.get(url)
 
-    soup = BeautifulSoup(response.text, 'html.parser')
-    scheludeJSON = __findJSON(soup)
-  
-    scheludeList = __parseScheludeJSON(scheludeJSON)
-    return scheludeList
+        soup = BeautifulSoup(response.text, 'html.parser')
+        scheludeJSON = __findJSON(soup)
+    
+        scheludeList = __parseScheludeJSON(scheludeJSON)
+        return scheludeList
+    else:
+        return url
 
 
 def nextWeekSchelude(group):
     url = _getGroupScheludeURL(group)
-    response = requests.get(url)
-    soup = BeautifulSoup(response.text, 'html.parser')
-    buttons = soup.find_all('a')
+    if url[:6] != 'Ошибка':
+        response = requests.get(url)
+        soup = BeautifulSoup(response.text, 'html.parser')
+        buttons = soup.find_all('a')
 
-    href = ''
-    found = False
-    for button in buttons:
-        if found == False:
-            if 'Следующая неделя' in button:
-                i = 0
-                button = str(button)
-                while i < len(button):
-                    if button[i:i+6] != 'href="':
-                        i += 1
-                    else:
-                        i += 6
-                        while button[i] != '"':
-                            href += button[i]
+        href = ''
+        found = False
+        for button in buttons:
+            if found == False:
+                if 'Следующая неделя' in button:
+                    i = 0
+                    button = str(button)
+                    while i < len(button):
+                        if button[i:i+6] != 'href="':
                             i += 1
-                        found = True
-                        break
+                        else:
+                            i += 6
+                            while button[i] != '"':
+                                href += button[i]
+                                i += 1
+                            found = True
+                            break
 
 
-    url = 'https://ruz.spbstu.ru' + href
+        url = 'https://ruz.spbstu.ru' + href
 
-    response = requests.get(url)
+        response = requests.get(url)
 
-    soup = BeautifulSoup(response.text, 'html.parser')
-    scheludeJSON = __findJSON(soup)
-  
-    scheludeList = __parseScheludeJSON(scheludeJSON)
+        soup = BeautifulSoup(response.text, 'html.parser')
+        scheludeJSON = __findJSON(soup)
+    
+        scheludeList = __parseScheludeJSON(scheludeJSON)
 
-    return(scheludeList)
+        return(scheludeList)
+    else:
+        return url
