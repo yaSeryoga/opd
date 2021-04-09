@@ -82,7 +82,7 @@ def __parseScheludeJSON(json):
     ii = 0
 
     result = []
-    for dayNumber in range(1, 8):
+    for dayNumber in range(1, 7):  #без воскресенья
         dayLessons = []
         if dayNumber == 1:
             dayName = 'Понедельник'
@@ -96,15 +96,16 @@ def __parseScheludeJSON(json):
             dayName = 'Пятница'
         elif dayNumber == 6:
             dayName = 'Суббота'
-        elif dayNumber == 7:
-            dayName = 'Воскресенье'
+        # elif dayNumber == 7:
+        #     dayName = 'Воскресенье'
 
 
-        date = __getElementFromJson('date', json)
+        
         if f'"weekday":{dayNumber}' not in json:
             moreLessons = False
             result.append({'day_number': dayNumber, 'date': date, 'day_name': dayName, 'lessons': 'Выходной'})
         else:
+            date = __getElementFromJson('date', json)
             moreLessons = True
             while moreLessons:
                 lesson = {}
@@ -119,11 +120,6 @@ def __parseScheludeJSON(json):
                     lesson.update({'auditory': f'{__getElementFromJson("name", json)}, {__getElementFromJson("name", json)}'})
                     lesson.update({'lms_url': __getElementFromJson('lms_url', json)})
                 if lesson['subject_name'] == 'Элективная физическая культура и спорт':
-
-                    # __getElementFromJson("first_name", json)
-                    # __getElementFromJson("middle_name", json)
-                    # __getElementFromJson("last_name", json)
-                    #__getElementFromJson("name", json)
                     __getElementFromJson('lms_url', json)
                 
                     
@@ -168,7 +164,7 @@ def _getGroupScheludeURL(group):
     elif group[:3]=='373' or group[:3]=='374'or group[:3]=='375' or group[:3]=='376' or group[:4]=='в373' or group[:4]=='в374' or group[:4]=='з373' or group[:4]=='з374' or group[:4]=='з375' or group[:4]=='з376':#ИПМЭиТ
         url = 'https://ruz.spbstu.ru/faculty/100/groups'
     else:
-        return 'Группа не найдена'
+        return 'Ошибка: группа не найдена'
     
     
     response = requests.get(url)
@@ -179,12 +175,13 @@ def _getGroupScheludeURL(group):
         soup = BeautifulSoup(response.text, 'html.parser')
         groupsJson = __findJSON(soup)
         groupid = ''
-
+        
+        groupsJson = groupsJson.replace('{', '},')
         groupsJson = groupsJson.split('},')
         for element in groupsJson:
             if group == __getGroupNameFromElement(element):
                 for char in element:
-                    if char == 'i' and element[element.index(char) + 1] == 'd':
+                    if element[element.index(char) - 1:element.index(char)+3] == '"id"':
                         charid = element.index(char) + 4
                         groupid = ''
                         while element[charid] != ',':
