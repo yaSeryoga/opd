@@ -1,4 +1,4 @@
-#ver 1.0.1
+
 import requests
 from bs4 import BeautifulSoup
 
@@ -82,7 +82,7 @@ def __parseScheludeJSON(json):
     ii = 0
 
     result = []
-    for dayNumber in range(1, 7):  #без воскресенья
+    for dayNumber in range(1, 8):  
         dayLessons = []
         if dayNumber == 1:
             dayName = 'Понедельник'
@@ -96,14 +96,14 @@ def __parseScheludeJSON(json):
             dayName = 'Пятница'
         elif dayNumber == 6:
             dayName = 'Суббота'
-        # elif dayNumber == 7:
-        #     dayName = 'Воскресенье'
+        elif dayNumber == 7:
+            dayName = 'Воскресенье'
 
 
         
         if f'"weekday":{dayNumber}' not in json:
             moreLessons = False
-            result.append({'day_number': dayNumber, 'date': date, 'day_name': dayName, 'lessons': 'Выходной'})
+            result.append({'day_number': dayNumber, 'date': '', 'day_name': dayName, 'lessons': 'Выходной'})
         else:
             date = __getElementFromJson('date', json)
             moreLessons = True

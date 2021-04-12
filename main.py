@@ -1,4 +1,4 @@
-#ver 1.0
+
 import telebot
 from telebot import types
 from config import TOKEN
@@ -8,45 +8,50 @@ bot = telebot.TeleBot(TOKEN)
 
 
 def start(message):
-    bot.send_message(message.chat.id, 'Привет! Это Телеграм бот для просмотра расписания Политехнического университета!\n\n'
-        'Для того, чтобы посмотреть расписание, отправьте нам номер группы. Псоле этого появятся кнопки, с помощью которых можно будет легко узнать всю нужную информацию\n\n'
-        'У нас есть такие вот функции:\n'
-        '/todayYOUR_GROUP - получить расписание на сегодня (группу нужно вводить в формате 3532703_90001)\n'
-        '/tomorrowYOUR_GROUP - получить расписакние на завтра\n'
-        '/thisweekYOUR_GROUP - получить расписание на эту неделю\n'
-        '/nextweekYOUR_GROUP - получить расписание на следующую неделю\n'
-        '/help - помощь по эксплуатации\n'
-        '/info - посмотреть информацию о боте\n'
-        '\nКнопки меняются каждый раз, когда Вы выбираете другую группу!\n\n'
-        'Попробуйте что-нибудь, например, /today3532703_90001\n'
-        '\nP.S. Проект находится на стадии разработки, так что, если появились какие-нибудь жалобы или предложения, просьба писать сюда: @ya_seryoga - мы, со своей стороны, сделаем всё возможное, чтобы стать лучше'
+    bot.send_message(message.chat.id, 'Привет, это телеграм бот для просмотра расписания политехнического университета!\n'
+    '*Для того, чтобы посмотреть расписание группы, просто напиши её номер :)*\n\n'
+    'Для просмотра справки по командам - /help\n'
+    'Информация о боте - /info', parse_mode='Markdown'
+    # 'Привет! Это Телеграм бот для просмотра расписания Политехнического университета!\n\n'
+    #     'Для того, чтобы посмотреть расписание, отправьте нам номер группы. Псоле этого появятся кнопки, с помощью которых можно будет легко узнать всю нужную информацию\n\n'
+    #     'У нас есть такие вот функции:\n'
+    #     '/todayYOUR_GROUP - получить расписание на сегодня (группу нужно вводить в формате 3532703_90001)\n'
+    #     '/tomorrowYOUR_GROUP - получить расписакние на завтра\n'
+    #     '/thisweekYOUR_GROUP - получить расписание на эту неделю\n'
+    #     '/nextweekYOUR_GROUP - получить расписание на следующую неделю\n'
+    #     '/help - помощь по эксплуатации\n'
+    #     '/info - посмотреть информацию о боте\n'
+    #     '\nКнопки меняются каждый раз, когда Вы выбираете другую группу!\n\n'
+    #     'Попробуйте что-нибудь, например, /today3532703_90001\n'
+    #     '\nP.S. Проект находится на стадии разработки, так что, если появились какие-нибудь жалобы или предложения, просьба писать сюда: @ya_seryoga - мы, со своей стороны, сделаем всё возможное, чтобы стать лучше'
     )
 
 
 
 def help(message):
-    bot.send_message(message.chat.id, 'Для того, чтобы выбрать группу, просто напишите её номер в чат\n\n'
+    bot.send_message(message.chat.id, '*Для того, чтобы выбрать группу, просто напишите её номер в чат*\n\n'
         'У нас есть такие вот функции:\n'
-        '/todayYOUR_GROUP - получить расписание на сегодня (группу нужно вводить в формате 3532703_90001)\n'
-        '/tomorrowYOUR_GROUP - получить расписакние на завтра\n'
-        '/thisweekYOUR_GROUP - получить расписание на эту неделю\n'
-        '/nextweekYOUR_GROUP - получить расписание на следующую неделю\n'
+        '/todayYOURGROUP - получить расписание на сегодня (команду нужно вводить вот так: /today353270390001)\n'
+        '/tomorrowYOURGROUP - получить расписакние на завтра\n'
+        '/thisweekYOURGROUP - получить расписание на эту неделю\n'
+        '/nextweekYOURGROUP - получить расписание на следующую неделю\n'
         '/help - помощь по эксплуатации\n'
         '/info - посмотреть информацию о боте\n'
-        '\nКнопки меняются каждый раз, когда Вы выбираете другую группу!'
+        '\n*Кнопки меняются каждый раз, когда Вы выбираете другую группу* (как командой, так и просто введя номер группы в чате)!',
+        parse_mode='Markdown'
     )
 
 
 def info(message):
     bot.send_message(message.chat.id, 'Бот разработан в рамках дисциплины "Основы проектной деятельности" командой ИКНТ-2614\n'
-                                        'Версия от 09.04.2021')
+                                        'Версия от 12.04.2021')
 
 
 def today(message, group):
     day = schelude.todaySchecude(group)
     if 'Ошибка' not in day:
         answer = ''
-        if day["date"] != 'none':
+        if day["date"] != '':
                 answer += f'*Сегодня, {day["day_name"]}, {day["date"][8:10]}.{day["date"][5:7]}*\n\n' 
                 k = 1
                 if day["lessons"] != 'Выходной':
@@ -61,9 +66,9 @@ def today(message, group):
                 else:
                     answer += 'Выходной\n\n'
         else:
-            answer = 'Сегодня выходной :)'
+            answer = f'*Сегодня ({day["day_name"]}) выходной :)*'
         
-        group = group.replace('/', '_')
+        group = group.replace('_', '').replace('/', '')
         markup_reply = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
         item_today = types.KeyboardButton(f'/today{group}')
         item_tomorrow = types.KeyboardButton(f'/tomorrow{group}')
@@ -83,7 +88,7 @@ def tomorrow(message, group):
     day = schelude.tomorrowSchelude(group)
     if 'Ошибка' not in day:
         answer = ''
-        if day["date"] != 'none':
+        if day["date"] != '':
                 answer += f'*Завтра, {day["day_name"]}, {day["date"][8:10]}.{day["date"][5:7]}*\n\n' 
                 k = 1
                 if day["lessons"] != 'Выходной':
@@ -98,10 +103,10 @@ def tomorrow(message, group):
                 else:
                     answer += 'Выходной\n\n'
         else:
-            answer = 'Завтра выходной :)'
+            answer = f'*Завтра ({day["day_name"]}) выходной :)*'
         
 
-        group = group.replace('/', '_')
+        group = group.replace('_', '').replace('/', '')
         markup_reply = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
         item_today = types.KeyboardButton(f'/today{group}')
         item_tomorrow = types.KeyboardButton(f'/tomorrow{group}')
@@ -119,10 +124,11 @@ def tomorrow(message, group):
 def thisweek(message, group):
     json = schelude.thisWeekSchelude(group)
     if 'Ошибка' not in json:
+        json = json[:6]
         answer = '*Расписание на неделю:*\n\n'
         for day in json:
 
-            if day["date"] != 'none':
+            if day["date"] != '':
                 answer += f'*{day["day_name"]}, {day["date"][8:10]}.{day["date"][5:7]}*\n\n' 
                 k = 1
                 if day["lessons"] != 'Выходной':
@@ -134,13 +140,13 @@ def thisweek(message, group):
                             answer += f'_{lesson["teacher"]}_\n'
                             answer += f'{lesson["auditory"]}\n'
                             answer += f'[СДО]({lesson["lms_url"]})\n\n'
-                else:
-                    answer += 'Выходной\n\n'
+            else:
+                answer += f'*{day["day_name"]} - Выходной*\n\n'
 
-                answer += '\n\n'
+            answer += '\n\n'
 
 
-        group = group.replace('/', '_')
+        group = group.replace('_', '').replace('/', '')
         markup_reply = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
         item_today = types.KeyboardButton(f'/today{group}')
         item_tomorrow = types.KeyboardButton(f'/tomorrow{group}')
@@ -158,10 +164,11 @@ def thisweek(message, group):
 def nextweek(message, group):
     json = schelude.nextWeekSchelude(group)
     if 'Ошибка' not in json:
+        json = json[:6]
         answer = '*Расписание на следующую неделю:*\n\n'
         for day in json:
 
-            if day["date"] != 'none':
+            if day["date"] != '':
                 answer += f'*{day["day_name"]}, {day["date"][8:10]}.{day["date"][5:7]}*\n\n' 
                 k = 1
                 if day["lessons"] != 'Выходной':
@@ -178,13 +185,13 @@ def nextweek(message, group):
                                 answer += '\n'
                         else:
                             answer += '\n'
-                else:
-                    answer += 'Выходной\n\n'
+            else:
+                answer += f'*{day["day_name"]} - Выходной*\n\n'
 
                 answer += '\n\n'
 
 
-        group = group.replace('/', '_')
+        group = group.replace('_', '').replace('/', '')
         markup_reply = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
         item_today = types.KeyboardButton(f'/today{group}')
         item_tomorrow = types.KeyboardButton(f'/tomorrow{group}')
@@ -200,7 +207,9 @@ def nextweek(message, group):
 
 def setgroup(message):
     group = message.text
-    group = group.replace('/', '_')
+    group = group.replace('/', '')
+  
+    
     markup_reply = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
     item_today = types.KeyboardButton(f'/today{group}')
     item_tomorrow = types.KeyboardButton(f'/tomorrow{group}')
@@ -209,29 +218,35 @@ def setgroup(message):
     item_help = types.KeyboardButton('/help')
     markup_reply.add(item_today, item_tomorrow, item_thisweek, item_nextweek, item_help)
 
-    group = group.replace('_', '/')
-    bot.send_message(message.chat.id, f'*Выбрана группа {group}*', parse_mode='Markdown', reply_markup=markup_reply)
+
+    #group = group[:7] + '/' + group[7:]
+    
+    bot.send_message(message.chat.id, f'*Выбрана группа {group[:7] + "/" + group[7:]}*', parse_mode='Markdown', reply_markup=markup_reply)
 
 
 @bot.message_handler(func=lambda m: True)
 def replyall(message):
-    text = message.text.upper().replace('_', '/')
+    text = message.text.upper().replace('_', '').replace('/', '')
+    #text = text.replace('/', '')
+    #print(text[8:15] + '/' + text[15:])
+    #print(text[5:12] + '/' + text[12:])
+    #print(text[:7] + '/' + text[7:])
 
-    if text[:6] == '/TODAY':
-        today(message, text[6:])
-    elif text[:9] == '/TOMORROW':
-        tomorrow(message, text[9:])
-    elif text[:9] == '/THISWEEK':
-        thisweek(message, text[9:])
-    elif text[:9] == '/NEXTWEEK':
-        nextweek(message, text[9:])
-    elif 'Ошибка' not in schelude._getGroupScheludeURL(text):
+    if text[:5] == 'TODAY':
+        today(message,text[5:12] + '/' + text[12:])
+    elif text[:8] == 'TOMORROW':
+        tomorrow(message, text[8:15] + '/' + text[15:])
+    elif text[:8] == 'THISWEEK':
+        thisweek(message, text[8:15] + '/' + text[15:])
+    elif text[:8] == 'NEXTWEEK':
+        nextweek(message, text[8:15] + '/' + text[15:])
+    elif 'Ошибка' not in schelude._getGroupScheludeURL(text[:7] + '/' + text[7:]):
         setgroup(message)
-    elif text[:6] == '/START':
+    elif text[:5] == 'START':
         start(message)
-    elif  text[:5] == '/HELP':
+    elif  text[:4] == 'HELP':
         help(message)
-    elif text[:5] == '/INFO':
+    elif text[:4] == 'INFO':
         info(message) 
     else:
         bot.send_message(message.chat.id, 'Неправильный запрос, проверьте команду или посмотрите /help')
